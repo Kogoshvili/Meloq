@@ -1,0 +1,8 @@
+/*
+"array"
+"object"
+"resource"
+"resource (closed)" as of PHP 7.2.0
+"NULL"
+"unknown type"
+*/

@@ -1,0 +1,22 @@
+{
+    "name": "kogoshvili/meloq",
+    "autoload": {
+        "psr-4": {
+            "Kogoshvili\\Meloq\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Andrian Kogoshvili",
+            "email": "kogoshvili@pm.me"
+        }
+    ],
+    "require": {},
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Kogoshvili\\Meloq\\MeloqServiceProvider"
+            ]
+        }
+    }
+}
