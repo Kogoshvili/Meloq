@@ -1,5 +1,8 @@
 {
     "name": "kogoshvili/meloq",
+    "description": "Migration generator for Laravel",
+    "license": "MIT",
+    "version": "0.1.0",
     "autoload": {
         "psr-4": {
             "Kogoshvili\\Meloq\\": "src/"
@@ -7,11 +10,12 @@
     },
     "authors": [
         {
-            "name": "Andrian Kogoshvili",
-            "email": "kogoshvili@pm.me"
+            "name": "Andrian Kogoshvili"
         }
     ],
-    "require": {},
+    "require": {
+        "php": ">=8.0"
+    },
     "extra": {
         "laravel": {
             "providers": [

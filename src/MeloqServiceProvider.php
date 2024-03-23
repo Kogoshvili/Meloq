@@ -20,7 +20,7 @@ class MeloqServiceProvider extends ServiceProvider
 
             $this->publishes([
                 __DIR__.'/config/meloq.php' => config_path('meloq.php'),
-            ], 'config');
+            ], 'meloq-config');
         }
     }
 }

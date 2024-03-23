@@ -2,6 +2,7 @@
 
 namespace Kogoshvili\Meloq;
 
+use Kogoshvili\Meloq\Attributes\Method as MethodAttribute;
 use ReflectionClass;
 use Exception;
 use Kogoshvili\Meloq\Models\Model;
@@ -11,6 +12,7 @@ use \Kogoshvili\Meloq\Attributes\Column as ColumnAttribute;
 use \Kogoshvili\Meloq\Attributes\Table as TableAttribute;
 use \Kogoshvili\Meloq\Attributes\Ignore as IgnoreAttribute;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class Reader
 {
@@ -44,8 +46,23 @@ class Reader
         $columns = $this->describeProperties($reflectionClass);
 
         if ($table->primary) {
+            $columnExists = false;
             foreach ($columns as $column) {
-                $column->primary = false;
+                if ($column->property === $table->primary) {
+                    $column->primaryKey = true;
+                    $columnExists = true;
+                } else {
+                    $column->primaryKey = false;
+                }
+            }
+
+            if (!$columnExists) {
+                $columns[$table->primary] = new Column(
+                    property: $table->primary,
+                    name: strtolower($table->primary),
+                    type: 'integer',
+                    nullable: false
+                );
             }
         }
 
@@ -112,15 +129,7 @@ class Reader
                 if ($methodReturnType == 'Illuminate\Database\Eloquent\Relations\BelongsToMany') {
                     $relation = $method->invoke(new $method->class);
                     $relatedClass = get_class($relation->getRelated());
-                    $relatedModels = array_filter($models, function ($model) use ($relatedClass) {
-                        return $model->table->class === $relatedClass;
-                    });
-
-                    if (!empty($relatedModels)) {
-                        $relatedModel = array_values($relatedModels)[0];
-                        $model = $this->buildManyToManyModel($method, $model, $relatedModel);
-                        $extraModels[] = $model;
-                    }
+                    $extraModels[] = $this->buildManyToManyModel($relation, $model->table->class, $relatedClass);;
                 }
             }
         }
@@ -128,10 +137,8 @@ class Reader
         return $extraModels;
     }
 
-    protected function buildManyToManyModel(\ReflectionMethod $method, Model $model, Model $relatedModel) : Model
+    protected function buildManyToManyModel(Relation $relation, string $class, string $relatedClass): Model
     {
-        $relation = $method->invoke(new $method->class);
-        $relatedClass = get_class($relation->getRelated());
         $relatedClassReflection = new ReflectionClass($relatedClass);
         $relatedRelation = null;
 
@@ -140,7 +147,7 @@ class Reader
             if (Str::startsWith($returnType, 'Illuminate\Database\Eloquent\Relations')) {
                 $potentialRelation = $method->invoke(new $method->class);
                 $potentialRelationClass = get_class($potentialRelation->getRelated());
-                if ($potentialRelationClass === $model->table->class) {
+                if ($potentialRelationClass === $class) {
                     $relatedRelation = $potentialRelation;
                     break;
                 }
@@ -148,7 +155,7 @@ class Reader
         }
 
         if (is_null($relatedRelation)) {
-            throw new Exception("Relation method not found for {$model->table->class}");
+            throw new Exception("Relation method not found on class {$relatedClass}");
         }
 
         $tableName = $relation->getTable();
@@ -276,8 +283,8 @@ class Reader
 
         if (!empty($classAttributes)) {
             $columnProperties = $classAttributes[0]->getArguments();
-            $tableName ??= $columnProperties['name'];
-            $primary ??= $columnProperties['primary'];
+            $tableName ??= $columnProperties['name'] ?? null;
+            $primary ??= $columnProperties['primary'] ?? null;
         }
 
         $tableName ??= $reflectionClass->getProperty('table')?->getDefaultValue();
