@@ -58,6 +58,13 @@ install the package:
 ```bash
 composer require kogoshvili/meloq:dev-main
 ```
+add the service provider to the providers array in config/app.php:
+```php
+'providers' => ServiceProvider::defaultProviders()->merge([
+    //...
+    Kogoshvili\Meloq\MeloqServiceProvider::class,
+])->toArray(),
+```
 publish the config file (optional):
 ```bash
 php artisan vendor:publish --tag=meloq-config
@@ -86,8 +93,8 @@ public int $total = 0; => $table->integer('total')->default(0);
 ```
 Attributes example:
 ```php
-#[Column(name: "author", type: "string", nullable: true)]
-public string $author; => $table->string('author')->nullable();
+#[Column(name: "Author", type: "string", nullable: true)]
+public string $author; => $table->string('Author')->nullable();
 ```
 
 
