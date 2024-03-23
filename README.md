@@ -56,7 +56,7 @@ Schema::create('books', function (Blueprint $table) {
 ## Setup
 install the package:
 ```bash
-php artisan package:install-package kogoshvili/meloq
+composer require kogoshvili/meloq:dev-main
 ```
 publish the config file (optional):
 ```bash
